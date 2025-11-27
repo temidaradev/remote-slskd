@@ -1,4 +1,4 @@
-# auto-soul — Soulseek album downloader
+# remote-slskd — Soulseek album downloader
 
 Short script to search for albums via a local `slskd` API and queue high-quality flac matches for download.
 
