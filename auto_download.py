@@ -49,6 +49,11 @@ SEARCH_TIMEOUT = int(os.environ.get("SEARCH_TIMEOUT", "8000"))
 MAX_WAIT = int(os.environ.get("MAX_WAIT", "15"))
 ENOUGH_RESULTS = int(os.environ.get("ENOUGH_RESULTS", "15"))
 
+# Server-side cap: slskd ends the search once this many responses arrive, so it
+# actually stops (important on a low-power host) instead of running the full
+# window. Keep it >= ENOUGH_RESULTS so the client has enough to rank.
+RESPONSE_LIMIT = int(os.environ.get("RESPONSE_LIMIT", "100"))
+
 LOSSLESS_EXTS = (".flac",)
 LOSSY_EXTS = (".mp3", ".m4a", ".ogg", ".opus", ".wav", ".aac")
 
@@ -66,6 +71,7 @@ def search(query):
         "searchText": query,
         "filterResponses": True,
         "searchTimeout": SEARCH_TIMEOUT,
+        "responseLimit": RESPONSE_LIMIT,
     }
 
     try:
@@ -98,6 +104,14 @@ def search(query):
             # Stop early once we have plenty to choose from.
             if len(responses) >= ENOUGH_RESULTS and i >= 2:
                 break
+
+        # Stop the search server-side so it doesn't keep running on the host.
+        try:
+            requests.put(
+                f"{API_URL}/api/v0/searches/{search_id}", headers=HEADERS, timeout=5
+            )
+        except requests.exceptions.RequestException:
+            pass
 
         print(" ✓\n")
         return responses
