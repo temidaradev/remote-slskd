@@ -4,6 +4,9 @@
 # Downloads
 downloads/
 
+# slskd runtime data (config, db, logs) created by the dev shell
+.slskd/
+
 # Python
 __pycache__/
 *.py[cod]

@@ -1,0 +1,34 @@
+# slskd for CasaOS / Docker.
+#
+# In CasaOS: App Store → "+" (top-right) → Install a customized app →
+# switch to the YAML/import view (the "</>" icon) → paste this file →
+# edit the CAPITALISED bits → Install.
+#
+# The API key MUST match API_KEY in auto_download.py.
+name: slskd
+services:
+  slskd:
+    image: slskd/slskd:latest
+    container_name: slskd
+    restart: unless-stopped
+    ports:
+      - "5030:5030"     # web UI + REST API (what auto_download.py talks to)
+      - "50300:50300"   # incoming Soulseek connections
+    # slskd is configured entirely via env vars; its Docker entrypoint does
+    # NOT accept CLI flags as the container command.
+    environment:
+      # Your Soulseek account (claimed on first login with any client).
+      SLSKD_SLSK_USERNAME: "YOUR_SOULSEEK_NAME"
+      SLSKD_SLSK_PASSWORD: "YOUR_SOULSEEK_PASSWORD"
+      # Must match API_KEY in auto_download.py (16-255 chars).
+      SLSKD_API_KEY: "copilot-secret-key-123456789"
+      # Container-side paths (see volumes below). Shares are semicolon-separated.
+      SLSKD_SHARED_DIR: "/music"
+      SLSKD_DOWNLOADS_DIR: "/downloads"
+    volumes:
+      # slskd config + database (keep it; safe under CasaOS AppData)
+      - /DATA/AppData/slskd:/app
+      # The folder you want to SHARE with the network (change the host side)
+      - /DATA/Media/Music:/music
+      # Where finished downloads land (change the host side if you like)
+      - /DATA/Downloads/slskd:/downloads
